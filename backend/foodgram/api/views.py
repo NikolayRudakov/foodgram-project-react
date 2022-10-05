@@ -3,20 +3,18 @@ from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
+from recipes import models
 from rest_framework import response, status
 from rest_framework.decorators import action
-from rest_framework.permissions import (
-    IsAuthenticated,
-    IsAuthenticatedOrReadOnly,
-)
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.viewsets import ModelViewSet
 from users.models import Subscription, User
 
 from . import permissions, serializers
 from .filters import IngredientSearchFilter, RecipeFilter
-from .shopping_list_pdf import get_shopping_list
 from .mixins import BaseListRetrieveViewSet
-from recipes import models
+from .shopping_list_pdf import get_shopping_list
 
 
 class FoodgramUserViewSet(UserViewSet):
