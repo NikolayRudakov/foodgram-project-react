@@ -1,4 +1,4 @@
-# praktikum_new_diplom
+# foodgram-project-react
 ![workflow](https://github.com/NikolayRudakkov/yambd_final/actions/workflows/yamdb_workflow.yml/badge.svg)
 
 ## **Об авторе:**

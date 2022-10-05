@@ -30,7 +30,7 @@ class RecipeFilter(filters.FilterSet):
 
     class Meta:
         model = models.Recipe
-        fields = ['author']
+        fields = ('author',)
 
 
 class IngredientSearchFilter(filters.FilterSet):

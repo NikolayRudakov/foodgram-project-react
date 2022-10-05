@@ -3,34 +3,30 @@ from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from recipes import models
 from rest_framework import response, status
 from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
-from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from users.models import Subscription, User
 
 from . import permissions, serializers
 from .filters import IngredientSearchFilter, RecipeFilter
 from .shopping_list_pdf import get_shopping_list
-
-
-class BaseListRetrieveViewSet(
-    ListModelMixin, RetrieveModelMixin,
-    GenericViewSet
-):
-    pass
+from .mixins import BaseListRetrieveViewSet
+from recipes import models
 
 
 class FoodgramUserViewSet(UserViewSet):
     """Вьюсет для работы с эндпоинтом /users/ и производными."""
 
     @action(
-        methods=['get'], detail=False,
+        methods=['get'],
+        detail=False,
         filter_backends=[DjangoFilterBackend],
-        permission_classes=[IsAuthenticated]
+        permission_classes=[IsAuthenticated],
     )
     def subscriptions(self, request):
         """Метод получения списка интересующих авторов."""
@@ -40,18 +36,18 @@ class FoodgramUserViewSet(UserViewSet):
         )
         qs = self.paginate_queryset(user_following_qs)
         serializer = serializers.UserSubscriptionSerializer(
-            qs, many=True,
+            qs,
+            many=True,
             context={
                 'request': self.request,
                 'format': self.format_kwarg,
-                'view': self
-            }
+                'view': self,
+            },
         )
         return self.get_paginated_response(serializer.data)
 
     @action(
-        methods=['post'], detail=True,
-        permission_classes=[IsAuthenticated]
+        methods=['post'], detail=True, permission_classes=[IsAuthenticated]
     )
     def subscribe(self, request, id):
         """Метод подписки на автора или отписки."""
@@ -83,7 +79,7 @@ class FoodgramUserViewSet(UserViewSet):
 
         return response.Response(
             {"error": "Вы не были подписаны на этого пользователя"},
-            status=status.HTTP_400_BAD_REQUEST
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
 
@@ -123,32 +119,31 @@ class RecipeViewSet(ModelViewSet):
         user = self.request.user
 
         if user.is_anonymous:
-            return models.Recipe.objects.select_related(
-                'author'
-            ).prefetch_related(
-                'ingredients', 'tags'
-            ).annotate(
-                is_favorited=Value(False),
-                is_in_shopping_cart=Value(False)
-            ).all()
+            return (
+                models.Recipe.objects.select_related('author')
+                .prefetch_related('ingredients', 'tags')
+                .annotate(
+                    is_favorited=Value(False), is_in_shopping_cart=Value(False)
+                )
+                .all()
+            )
 
         is_favorited_qs = models.Favorites.objects.filter(
-            user=user,
-            recipe_id=OuterRef('pk')
+            user=user, recipe_id=OuterRef('pk')
         )
         shopping_cart_qs = models.ShoppingCart.objects.filter(
-            user=user,
-            recipe_id=OuterRef('pk')
+            user=user, recipe_id=OuterRef('pk')
         )
 
-        return models.Recipe.objects.select_related(
-            'author'
-        ).prefetch_related(
-            'ingredients', 'tags'
-        ).annotate(
-            is_favorited=Exists(is_favorited_qs),
-            is_in_shopping_cart=Exists(shopping_cart_qs)
-        ).all()
+        return (
+            models.Recipe.objects.select_related('author')
+            .prefetch_related('ingredients', 'tags')
+            .annotate(
+                is_favorited=Exists(is_favorited_qs),
+                is_in_shopping_cart=Exists(shopping_cart_qs),
+            )
+            .all()
+        )
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -180,14 +175,13 @@ class RecipeViewSet(ModelViewSet):
         except models.Recipe.DoesNotExist:
             return response.Response(
                 {"no_recipe": "Вы не доавляли этот рецепт"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         instance.delete()
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
-        methods=['get'], detail=False,
-        permission_classes=[IsAuthenticated]
+        methods=['get'], detail=False, permission_classes=[IsAuthenticated]
     )
     def download_shopping_cart(self, request):
         """Метод для получения списке рецептов в формате PDF."""
@@ -199,8 +193,7 @@ class RecipeViewSet(ModelViewSet):
             'recipe__ingredients__measurement_unit',
         ).annotate(
             ingredient_amount=Sum(
-                'recipe__recipeingredient_related__amount',
-                distinct=True
+                'recipe__recipeingredient_related__amount', distinct=True
             )
         )
 
@@ -212,7 +205,8 @@ class RecipeViewSet(ModelViewSet):
 
     @action(
         methods=['post', 'delete'],
-        detail=True, permission_classes=[IsAuthenticated]
+        detail=True,
+        permission_classes=[IsAuthenticated],
     )
     def shopping_cart(self, request, pk):
         """Метод добавления рецептов в список покупок и удаления из него."""
@@ -228,8 +222,9 @@ class RecipeViewSet(ModelViewSet):
         )
 
     @action(
-        methods=['post', 'delete'], detail=True,
-        permission_classes=[IsAuthenticated]
+        methods=['post', 'delete'],
+        detail=True,
+        permission_classes=[IsAuthenticated],
     )
     def favorite(self, request, pk):
         """Метод добавления избранных рецептов и их удаления."""
@@ -240,6 +235,4 @@ class RecipeViewSet(ModelViewSet):
         if request.method == 'DELETE':
             return self.__remove_recipe(recipe, user.favorites_related)
 
-        return self.__add_recipe(
-            recipe, user, serializers.FavoriteSerializer
-        )
+        return self.__add_recipe(recipe, user, serializers.FavoriteSerializer)

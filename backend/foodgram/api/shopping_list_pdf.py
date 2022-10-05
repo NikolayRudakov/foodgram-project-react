@@ -5,17 +5,13 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
-font_path = settings.BASE_DIR / 'backend_static/data/fonts/DejaVuSans.ttf'
+FONT_PATH = settings.BASE_DIR / 'backend_static/data/fonts/DejaVuSans.ttf'
 
 
 def create_pdf(buffer, x_pt, y_pt):
 
     pdf = canvas.Canvas(buffer)
-    pdfmetrics.registerFont(TTFont(
-        'DejaVuSans',
-        font_path,
-        'utf-8'
-    ))
+    pdfmetrics.registerFont(TTFont('DejaVuSans', FONT_PATH, 'utf-8'))
     pdf.setFont('DejaVuSans', 14)
     pdf.drawString(x_pt, y_pt, 'Список покупок')
 
