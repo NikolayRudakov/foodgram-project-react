@@ -6,5 +6,5 @@ from .serializers import CreateUserSerializer
 
 
 class CreateUserViewSet(CreateModelMixin, GenericViewSet):
-    queryset = User.objects.all()
+    queryset = User.objects.order_by("pk").all()
     serializer_class = CreateUserSerializer
