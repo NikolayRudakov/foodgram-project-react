@@ -139,6 +139,7 @@ class RecipeTag(BaseRecipeLinkTable):
 
     tag = models.ForeignKey(
         Tag,
+        null=True,
         on_delete=models.SET_NULL,
         related_name='recipes'
     )
