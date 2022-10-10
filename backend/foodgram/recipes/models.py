@@ -8,7 +8,7 @@ from users.models import User
 class Tag(models.Model):
 
     name = models.CharField(
-        max_length=30, 
+        max_length=30,
         verbose_name='Название',
         unique=True
     )
