@@ -8,16 +8,15 @@ from users.models import User
 class Tag(models.Model):
 
     name = models.CharField(
-        max_length=30, blank=False,
-        null=False, verbose_name='Название',
+        max_length=30, 
+        verbose_name='Название',
         unique=True
     )
     color = models.CharField(
-        max_length=10, blank=False,
-        null=False, verbose_name='Цвет в формате HEX'
+        max_length=10,
+        verbose_name='Цвет в формате HEX'
     )
     slug = models.SlugField(
-        blank=False, null=False,
         unique=True,
     )
 
@@ -36,12 +35,12 @@ class Tag(models.Model):
 class Ingredient(models.Model):
 
     name = models.CharField(
-        max_length=100, blank=False,
-        null=False, verbose_name='Название'
+        max_length=100,
+        verbose_name='Название'
     )
     measurement_unit = models.CharField(
-        max_length=50, blank=False,
-        null=False, verbose_name='Единица измерения'
+        max_length=50,
+        verbose_name='Единица измерения'
     )
 
     class Meta:
@@ -49,7 +48,7 @@ class Ingredient(models.Model):
         verbose_name_plural = ('Ингредиенты')
         constraints = [
             models.UniqueConstraint(
-                fields=['name', 'measurement_unit'],
+                fields=('name', 'measurement_unit',),
                 name='unique_name_measurement'
             )
         ]
@@ -67,29 +66,24 @@ class Recipe(models.Model):
     )
     image = models.ImageField(
         upload_to='recipes/',
-        blank=False, null=False,
         verbose_name='Изображение'
     )
     name = models.CharField(
-        max_length=200, blank=False, null=False,
+        max_length=200,
         verbose_name='Название'
     )
     text = models.TextField(
-        blank=False, null=False,
         verbose_name='Описание'
     )
     cooking_time = models.PositiveSmallIntegerField(
-        blank=False, null=False,
         verbose_name='Время приготовления (в минутах)'
     )
     ingredients = models.ManyToManyField(
         Ingredient, through='RecipeIngredient',
-        blank=False,
         verbose_name='Ингредиенты'
     )
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
-        blank=False, null=False,
         verbose_name='Автор',
         related_name='recipes'
     )
@@ -101,10 +95,10 @@ class Recipe(models.Model):
     class Meta:
         verbose_name = ('Рецепт')
         verbose_name_plural = ('Рецепты')
-        ordering = ['-pub_date']
+        ordering = ('-pub_date',)
         constraints = [
             models.UniqueConstraint(
-                fields=['name', 'text'],
+                fields=('name', 'text',),
                 name='unique_name_text_recipe'
             )
         ]
@@ -117,7 +111,6 @@ class BaseRecipeLinkTable(models.Model):
     """Base class containing recipe field with description."""
     recipe = models.ForeignKey(
         Recipe,
-        blank=False, null=False,
         on_delete=models.CASCADE,
         related_name="%(class)s_related"
     )
@@ -131,7 +124,6 @@ class BaseRecipeUser(BaseRecipeLinkTable):
     Class contains description of user field."""
     user = models.ForeignKey(
         User,
-        blank=False, null=False,
         on_delete=models.CASCADE,
         related_name="%(class)s_related"
     )
@@ -147,7 +139,6 @@ class RecipeTag(BaseRecipeLinkTable):
 
     tag = models.ForeignKey(
         Tag,
-        blank=False, null=True,
         on_delete=models.SET_NULL,
         related_name='recipes'
     )
@@ -164,7 +155,6 @@ class RecipeIngredient(BaseRecipeLinkTable):
 
     ingredient = models.ForeignKey(
         Ingredient,
-        blank=False, null=False,
         on_delete=models.CASCADE,
         related_name='recipes'
     )
@@ -185,7 +175,7 @@ class ShoppingCart(BaseRecipeUser):
         verbose_name_plural = ('Списки покупок')
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'recipe'],
+                fields=('user', 'recipe',),
                 name='unique_user_recipe_shopping_cart'
             )
         ]
@@ -198,7 +188,7 @@ class Favorites(BaseRecipeUser):
         verbose_name_plural = 'Избранное'
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'recipe'],
+                fields=('user', 'recipe',),
                 name='unique_user_recipe_favorites'
             )
         ]

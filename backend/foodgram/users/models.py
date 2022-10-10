@@ -6,26 +6,18 @@ class User(AbstractUser):
     email = models.EmailField(
         max_length=254,
         unique=True,
-        blank=False,
-        null=False,
         verbose_name='Email',
     )
     first_name = models.CharField(
         max_length=150,
-        blank=False,
-        null=False,
         verbose_name='Имя'
     )
     last_name = models.CharField(
         max_length=150,
-        blank=False,
-        null=False,
         verbose_name='Фамилия'
     )
     password = models.CharField(
         max_length=150,
-        blank=False,
-        null=False,
         verbose_name='Пароль'
     )
 
@@ -36,7 +28,7 @@ class User(AbstractUser):
         verbose_name_plural = 'Пользователи'
         constraints = [
             models.UniqueConstraint(
-                fields=['email', 'password'],
+                fields=('email', 'password',),
                 name='unique_login_fields'
             )
         ]
@@ -48,16 +40,12 @@ class User(AbstractUser):
 class Subscription(models.Model):
     user = models.ForeignKey(
         User,
-        blank=False,
-        null=False,
         on_delete=models.CASCADE,
         related_name='follower',
         verbose_name='Подписчик'
     )
     following = models.ForeignKey(
         User,
-        blank=False,
-        null=False,
         on_delete=models.CASCADE,
         related_name='following',
         verbose_name='Автор'
@@ -68,10 +56,10 @@ class Subscription(models.Model):
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
-        ordering = ['-sub_date']
+        ordering = ('-sub_date',)
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'following'],
+                fields=('user', 'following',),
                 name='unique_subscribtion'
             )
         ]
