@@ -76,6 +76,10 @@ jobs:
             sudo docker rmi ${{ secrets.DOCKER_USERNAME }}/foodgram_backend
             sudo docker image pull ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
             sudo docker-compose up -d
+            sudo docker-compose exec -T web python manage.py makemigrations
+            sudo docker-compose exec -T web python manage.py migrate
+            sudo docker-compose exec -T web python3 manage.py populate_ingredient ingredients.csv
+            sudo docker-compose exec -T web python manage.py collectstatic --no-input
 
   send_message:
     runs-on: ubuntu-latest
